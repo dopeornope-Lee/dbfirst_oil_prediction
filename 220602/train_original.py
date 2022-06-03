@@ -22,7 +22,7 @@ def make_model(input_shape, output_shape):
     targets = tf.keras.Input(shape=(output_shape[1], output_shape[2]), name='targets')
     predictions = StackedSCINet(horizon=horizon, features=input_shape[-1], stacks=K, levels=L, h=h,
                                 kernel_size=kernel_size,
-                                regularizer=(l1, l2))(inputs, targets)
+                                kernel_regularizer=(l1, l2))(inputs, targets)
     model = tf.keras.Model(inputs=[inputs, targets], outputs=predictions)
 
     model.summary()
@@ -33,30 +33,8 @@ def make_model(input_shape, output_shape):
     return model
 
 
-# Parametres
-data_filepath = 'datasets/ETDataset-main/ETT-small/ETTh1.csv'
-y_col = 'OT'
-index_col = 'date'
-degree_of_differencing = 0
-look_back_window, horizon = 48, 24
-batch_size = 16
-learning_rate = 9e-3
-h, kernel_size, L, K = 4, 5, 3, 1
-l1, l2 = 0.001, 0.1
-# split_strides = look_back_window + horizon
-split_strides = 1
 
-# data_filepath = 'datasets/solar_AL.csv'
-# y_col = None
-# index_col = None
-# degree_of_differencing = 0
-# look_back_window, horizon = 176, 3
-# batch_size = 1024
-# learning_rate = 1e-4
-# h, kernel_size, L, K = 2, 5, 4, 1
-# l1, l2 = 0.001, 0.1
-# split_strides = look_back_window + horizon
-# # split_strides = 1
+
 
 
 if __name__ == '__main__':

@@ -86,7 +86,7 @@ class Interleave(tf.keras.layers.Layer):
 
 class SCINet(tf.keras.layers.Layer):
     def __init__(self, horizon: int, features: int, levels: int, h: int, kernel_size: int,
-                 kernel_regularizer=None, activity_regularizer=None, name='scinet', **kwargs):
+                  activity_regularizer=None, name='scinet', **kwargs):
         """
         :param horizon: number of time stamps in output
         :param levels: height of the binary tree + 1
@@ -113,7 +113,6 @@ class SCINet(tf.keras.layers.Layer):
                           for _ in range(2 ** self.levels - 1)]
         self.dense = tf.keras.layers.Dense(
             self.horizon * features,
-            kernel_regularizer=kernel_regularizer,
             activity_regularizer=activity_regularizer
         )
 
@@ -161,7 +160,7 @@ class StackedSCINet(tf.keras.layers.Layer):
     """
 
     def __init__(self, horizon: int, features: int, stacks: int, levels: int, h: int, kernel_size: int,
-                 kernel_regularizer=None, activity_regularizer=None, name='stacked_scinet', **kwargs):
+                  activity_regularizer=None, name='stacked_scinet', **kwargs):
         """
         :param horizon: number of time stamps in output
         :param stacks: number of stacked SCINets
@@ -177,7 +176,7 @@ class StackedSCINet(tf.keras.layers.Layer):
         super().__init__(name=name, **kwargs)
         self.stacks = stacks
         self.scinets = [SCINet(horizon=horizon, features=features, levels=levels, h=h,
-                               kernel_size=kernel_size, kernel_regularizer=kernel_regularizer,
+                               kernel_size=kernel_size,
                                activity_regularizer=activity_regularizer) for _ in range(stacks)]
 
     def call(self, inputs):  # sample_weights=None
@@ -242,7 +241,7 @@ class StackedSCINetLoss(tf.keras.losses.Loss):
 
 
 def make_simple_scinet(input_shape, horizon: int, L: int, h: int, kernel_size: int, learning_rate: float,
-                       kernel_regularizer=None, activity_regularizer=None, diagram_path=None):
+                        activity_regularizer=None, diagram_path=None):
     """Compiles a simple SCINet and saves model diagram if given a path.
 
     Intended to be a demonstration of simple model construction. See paper for details on the hyperparameters.
@@ -250,7 +249,7 @@ def make_simple_scinet(input_shape, horizon: int, L: int, h: int, kernel_size: i
     model = tf.keras.Sequential([
         tf.keras.Input(shape=(input_shape[1], input_shape[2]), name='inputs'),
         SCINet(horizon, features=input_shape[-1], levels=L, h=h, kernel_size=kernel_size,
-               kernel_regularizer=kernel_regularizer, activity_regularizer=activity_regularizer)
+               activity_regularizer=activity_regularizer)
     ])
 
     model.summary()
@@ -265,7 +264,7 @@ def make_simple_scinet(input_shape, horizon: int, L: int, h: int, kernel_size: i
 
 
 def make_simple_stacked_scinet(input_shape, horizon: int, K: int, L: int, h: int, kernel_size: int,
-                               learning_rate: float, kernel_regularizer=None, activity_regularizer=None,
+                               learning_rate: float,  activity_regularizer=None,
                                diagram_path=None):
     """Compiles a simple StackedSCINet and saves model diagram if given a path.
 
@@ -273,7 +272,7 @@ def make_simple_stacked_scinet(input_shape, horizon: int, K: int, L: int, h: int
     """
     inputs = tf.keras.Input(shape=(input_shape[1], input_shape[2]), name='lookback_window')
     x = StackedSCINet(horizon=horizon, features=input_shape[-1], stacks=K, levels=L, h=h,
-                      kernel_size=kernel_size, kernel_regularizer=kernel_regularizer,
+                      kernel_size=kernel_size,
                       activity_regularizer=activity_regularizer)(inputs)
     outputs = Identity(name='outputs')(x[-1])
     intermediates = Identity(name='intermediates')(x)
